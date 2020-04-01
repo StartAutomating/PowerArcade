@@ -1,0 +1,510 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<!-- Generated with EZOut 1.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>PowerArcade.Box</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.Box</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+              <ExpressionBinding>
+                <ScriptBlock>@(
+    $box = $_
+    $boxWidth = 
+        if ($_.Width) { $_.Width}
+        else {$host.UI.RawUI.WindowSize.Width}
+    $boxHeight =
+        if ($_.Height) { $_.Height}
+        else {$host.UI.RawUI.WindowSize.Height}
+    $boxBackgroundColor = $box.BackgroundColor
+    $boxColor = $box.Color
+
+    $boxFill =
+        if ($box.Fill) { $box.Fill }
+        else { '█'; $boxColor = $boxBackgroundColor }
+
+    
+
+
+
+    $colorStart = 
+        @(
+            if ($boxColor) {
+                $intColor = [int]($boxColor -replace '#', '0x')
+                $r,$g,$b = 
+                    [byte](($intColor -band 0xff0000) -shr 16),
+                    [byte](($intColor -band 0x00ff00) -shr 8),
+                    [byte]($intColor -band 0x0000ff)
+                [char]0x1b+"[38;2;$r;$g;${b}m"
+            }
+
+            if ($box.BackgroundColor) {
+                $intColor = [int]($box.BackgroundColor -replace '#', '0x')
+                $r,$g,$b = 
+                    [byte](($intColor -band 0xff0000) -shr 16),
+                    [byte](($intColor -band 0x00ff00) -shr 8),
+                    [byte]($intColor -band 0x0000ff)
+                [char]0x1b+"[48;2;$r;$g;${b}m"
+            }
+        ) -join ''
+
+
+    $colorEnd = 
+        @(
+            if ($boxColor) {
+                [char]0x1b + '[39m'
+            }
+
+            if ($box.BackgroundColor) {
+                [char]0x1b + '[49m'
+            }
+        ) -join ''
+    $boxChar = [string]"$boxFill".Substring(0,1)
+
+    if ($null -ne $box.X -and $null -ne $box.Y) {            
+        @(for ($l =0 ;$l -lt $boxHeight; $l++) {
+            $colorStart
+            '' + [char]0x1b + "[$($box.Y + $l);$($box.X)H"
+            $boxChar * $boxWidth
+            $colorEnd
+        }) -join ''
+    } else {
+        $colorStart
+        @(
+            for ($l = 0; $l -lt $boxHeight; $l++) {
+                $boxChar * $boxWidth
+            }
+        ) -join [Environment]::NewLine
+        $colorEnd
+    }
+    ''
+
+    
+) -join ''
+</ScriptBlock>
+              </ExpressionBinding>
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+    <View>
+      <Name>PowerArcade.GameInfo</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.GameInfo</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <Wrap />
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Version</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Description</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>PowerArcade.Level</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.Level</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsCurrentLevel</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>PowerArcade.MessageBox</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.MessageBox</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+              <ExpressionBinding>
+                <ScriptBlock>$messageData = $_
+$Messages = 
+    if ($_.Messages){
+        $_.Messages
+    } else {
+        $_.Message
+    }
+
+$y = 
+    if ($messageData.Y) {
+        $messageData.Y
+    } else {
+        $GAME.Height * .33
+    }
+
+if ($messageData.Border -eq $true) {
+
+}
+
+$y--
+
+$colorSplat = @{
+    Color=
+        $(
+            if ($messageData.Color) {
+                $messageData.Color
+            } else {
+                $game.TextColor
+            }
+        )
+    BackgroundColor=
+        $(
+            if ($messageData.BackgroundColor) {
+                $messageData.BackgroundColor
+            } else {
+                $game.BackgroundColor
+            }
+        )
+}
+@(foreach ($Message in $Messages) {
+if (-not $Message) { continue } 
+$MessageLines = @($Message -split '(?&gt;\r\n|\n)')
+
+
+
+$MaxLength = $MessageLines | 
+    Measure-Object -Property Length -Maximum | 
+    Select-Object -ExpandProperty Maximum
+
+$TextLineStart = 
+        if ($messageData.X) {
+            $messageData.X
+        } else {
+            ($game.Width - $MaxLength) / 2
+        }
+
+    if ($messageData.Border -eq $true) {
+        $Y++
+        New-Sprite -Type Message -X $TextLineStart -Y $y -Content ('┌' + $('─' * $MaxLength) + '┐') @colorSplat
+    }
+    foreach ($MessageLine in $messageLines) {
+        $y++
+        if ($messageData.Border -eq $true) {
+            
+            New-Sprite -Type Message -X $TextLineStart -Y $y -Content $(
+                
+                '│' + "$MessageLine".PadRight($MaxLength) + '│'
+                
+            ) @colorSplat
+        } else {
+            New-Sprite -Type Message -X $TextLineStart -Y $y -Content $MessageLine @colorSplat
+        }
+    }
+    if ($messageData.Border -eq $true) {
+        $Y++
+        New-Sprite -Type Message -X $TextLineStart -Y $y -Content ('└' + $('─' * $MaxLength) + '┘') @colorSplat
+    }
+
+}) | Out-String -Width 1kb</ScriptBlock>
+              </ExpressionBinding>
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+    <View>
+      <Name>PowerArcade.PlayingCard</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.PlayingCard</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+              <ExpressionBinding>
+                <ScriptBlock>
+$designs = @{
+    0 = @'
+┌─────────┐
+│▒▒▒▒▒▒▒▒▒│
+│▒▒▒▒▒▒▒▒▒│
+│▒▒▒▒▒▒▒▒▒│
+│▒▒▒▒▒▒▒▒▒│
+│▒▒▒▒▒▒▒▒▒│
+│▒▒▒▒▒▒▒▒▒│ 
+│▒▒▒▒▒▒▒▒▒│
+└─────────┘
+'@
+        1 = @'
+┌─────────┐
+│A♣       │
+│         │
+│         │
+│    ♣    │
+│         │
+│         │ 
+│       ♣A│
+└─────────┘
+'@
+        2= @'
+┌─────────┐
+│2♣       │
+│    ♣    │
+│         │
+│         │
+│         │
+│    ♣    │ 
+│       ♣2│
+└─────────┘
+'@
+        3= @'
+┌─────────┐
+│3♣       │
+│   ♣     │
+│         │
+│    ♣    │
+│         │
+│     ♣   │
+│       ♣3│
+└─────────┘
+'@
+        4 = @'
+┌─────────┐
+│4♣       │
+│   ♣ ♣   │
+│         │
+│         │
+│         │
+│   ♣ ♣   │
+│       ♣4│
+└─────────┘
+'@
+    5 = @'
+┌─────────┐
+│5♣       │
+│   ♣ ♣   │
+│         │
+│    ♣    │
+│         │
+│   ♣ ♣   │
+│       ♣5│
+└─────────┘
+'@
+    6 = @'
+┌─────────┐
+│6♣       │
+│   ♣ ♣   │
+│         │
+│   ♣ ♣   │
+│         │
+│   ♣ ♣   │
+│       ♣6│
+└─────────┘
+'@
+
+    7 = @'
+┌─────────┐
+│7♣       │
+│   ♣ ♣   │
+│         │
+│  ♣ ♣ ♣  │
+│         │
+│   ♣ ♣   │
+│       ♣7│
+└─────────┘
+'@
+    8 = @'
+┌─────────┐
+│8♣       │
+│  ♣ ♣ ♣  │
+│         │
+│  ♣   ♣  │
+│         │
+│  ♣ ♣ ♣  │
+│       ♣8│
+└─────────┘
+'@
+    9= @'
+┌─────────┐
+│9♣       │
+│  ♣ ♣ ♣  │
+│         │
+│  ♣ ♣ ♣  │
+│         │
+│  ♣ ♣ ♣  │
+│       ♣9│
+└─────────┘
+'@
+    10 = @'
+┌─────────┐
+│10♣      │
+│  ♣ ♣ ♣  │
+│    ♣    │
+│  ♣   ♣  │
+│    ♣    │
+│  ♣ ♣ ♣  │
+│      ♣10│
+└─────────┘
+'@
+    11= @'
+┌─────────┐
+│J♣       │
+│     ♣   │
+│     ♣   │
+│     ♣   │
+│   ♣ ♣   │
+│    ♣    │
+│       ♣J│
+└─────────┘
+'@
+    12= @'
+┌─────────┐
+│Q♣       │
+│   ♣♣♣   │
+│  ♣   ♣  │
+│  ♣   ♣  │
+│  ♣   ♣  │
+│   ♣♣♣   │
+│      ♣♣Q│
+└─────────┘
+'@
+    13= @'
+┌─────────┐
+│K♣       │
+│  ♣   ♣  │
+│  ♣  ♣   │
+│  ♣♣♣    │
+│  ♣  ♣   │
+│  ♣   ♣  │
+│       ♣K│
+└─────────┘
+'@
+
+}
+
+
+$card = $_
+$realSuite = 
+    if ($card.Suite -eq '♣' -or $card.Suite -eq 'Clubs' -or $card.Suite -eq 1) 
+    {
+        '♣'
+    } 
+    elseif ($card.Suite -eq '♦' -or $card.Suite -eq 'Diamonds' -or $card.Suite -eq 2) 
+    {
+        '♦'
+    }
+    elseif ($card.Suite -eq '♥' -or $card.Suite -eq 'Hearts' -or $card.Suite -eq 3) 
+    {
+        '♥'
+    }
+    elseif ($card.Suite -eq '♠' -or $card.Suite -eq 'Spades' -or $card.Suite -eq 4) 
+    {
+        '♠'
+    }
+
+    $cardNumber = $card.Number -as [int]
+    if (-not $cardNumber) {
+        if ($card.Number -eq 'Ace') {
+            $cardNumber = 1
+        } elseif ($card.Number -eq 'Jack') {
+            $cardNumber = 11
+        } elseif ($card.Number -eq 'Queen') {
+            $cardNumber = 12
+        } elseif ($card.Number -eq 'King') {
+            $cardNumber = 13
+        }
+    }
+    if (-not $designs[$cardNumber]) {
+        throw "$($card.Number) not found"
+    }
+if (-not $Host.UI.SupportsVirtualTerminal) {
+    return $designs[$cardNumber] -replace '♣', $realSuite
+} else {
+    @(
+        
+        '' + [char]0x1b+"[48;2;255;255;255m"
+        if ('♣', '♠' -contains $realSuite) {
+            '' + [char]0x1b+"[38;2;0;0;0m"
+        } else {
+            '' + [char]0x1b+"[38;2;255;0;0m"
+        }
+        if ($card.Selected) {
+            '' + [char]0x1b + '[7m'
+        }
+        if ($card.X -ge 0 -and $card.Y -ge 0) {
+            $designLines = $designs[$cardNumber] -replace '♣', $realSuite -split '(?&gt;\r\n|\n)'
+            $y = $card.Y
+            foreach ($dl in $designLines) {
+                '' + [char]0x1b + "[$($Y);$($card.X)H"
+                $dl.Trim()
+                $y++
+            }
+        } else {
+            $designs[$cardNumber] -replace '♣', $realSuite
+        }
+        if ($card.Selected) {
+            '' + [char]0x1b + '[27m'
+        }
+        '' + [char]0x1b +'[39m'
+        '' + [char]0x1b +'[49m'
+    ) -join ''
+}
+</ScriptBlock>
+              </ExpressionBinding>
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+    <View>
+      <Name>PowerArcade.Sprite</Name>
+      <ViewSelectedBy>
+        <TypeName>PowerArcade.Sprite</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+              <ExpressionBinding>
+                <ScriptBlock>$_.Draw()</ScriptBlock>
+              </ExpressionBinding>
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>

@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<!-- Generated with EZOut 1.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
+<Types>
+  <Type>
+    <Name>PowerArcade.Level</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>Draw</Name>
+        <Script>
+                    # [Console]::CursorVisible = $false
+[Console]::Write("$(@(
+    foreach ($sprite in $this.Sprites) {
+        [char]0x1b + '[25l' + ($sprite | Out-String -Width 1kb).Trim()
+    }
+) -join '')")
+[Console]::CursorVisible = $false
+                </Script>
+      </ScriptMethod>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PowerArcade.Point</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>ToString</Name>
+        <Script>
+                    "$($this.X),$($this.Y)"
+
+                </Script>
+      </ScriptMethod>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PowerArcade.Game</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>GetSpatialHash</Name>
+        <Script>
+                    param(
+[Parameter(Mandatory)]
+$X,
+
+[Parameter(Mandatory)]
+$Y
+)
+
+"$(
+    [int][Math]::Floor($x / ($this.Width / $this.CellWidth))
+),$(
+    [int][Math]::Floor($y / ($this.Height / $this.CellHeight))
+)"
+
+                </Script>
+      </ScriptMethod>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PowerArcade.Sprite.Reference</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>ToString</Name>
+        <Script>
+                    @(
+    if ($this.Type) {
+        $this.Type
+    }
+    $this.SpriteID
+) -join ' '
+
+                </Script>
+      </ScriptMethod>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PowerArcade.Sprite</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>Move</Name>
+        <Script>
+                    param([Parameter(Mandatory)][int]$X,[Parameter(Mandatory)][int]$Y)
+$this | Move-Sprite -X $X -Y $Y
+return
+                </Script>
+      </ScriptMethod>
+      <ScriptMethod>
+        <Name>Hide</Name>
+        <Script>
+                    Add-Member NoteProperty Hidden $true -Force -InputObject $this
+
+                </Script>
+      </ScriptMethod>
+      <ScriptMethod>
+        <Name>MeasureBounds</Name>
+        <Script>
+                    param(
+[int]
+$X = $this.X,
+
+[int]
+$Y = $this.Y
+)
+
+
+if ($this.Width -and $this.Height) {
+    for ($oy = 0; $oy -lt $this.Height; $oy++) {
+        for ($ox = 0; $ox -lt $this.Width; $ox++) {
+
+            [PSCustomObject]@{
+                X = $x + $ox
+                Y = $y + $oy
+                SpatialHash = 
+                    $(if ($game.GetSpatialHash) { 
+                        $game.GetSpatialHash($x + $ox,$y + $oy)
+                    })
+                PSTypeName='PowerArcade.Point'
+            }
+        }
+    }
+    
+} elseif ($this.Content)  
+{
+    $cl = 
+        if ($this.ContentLength) {
+            $this.ContentLength
+        } else {
+            $this.Content.ToString().Length
+        }
+    for ($ox =0; $ox -lt $cl; $ox++) {
+        [PSCustomObject]@{
+            X = $x + $ox
+            Y = $y
+            SpatialHash = 
+                $(if ($game.GetSpatialHash) {
+                    $game.GetSpatialHash($x + $ox,$y)
+                })
+            PSTypeName='PowerArcade.Point'
+        }
+    }
+} elseif ($x -ge 0 -and $y -ge 0) {
+    [PSCustomObject]@{
+        X = $x
+        Y = $y
+        SpatialHash =
+            $(if ($game.GetSpatialHash) {
+                $game.GetSpatialHash($x,$y)
+            })
+        PSTypeName='PowerArcade.Point'
+    }
+}
+
+
+
+                </Script>
+      </ScriptMethod>
+      <ScriptMethod>
+        <Name>Clear</Name>
+        <Script>
+                    @(if ($this.X -ge 0 -and $this.Y -ge 0) {
+    '' + [char]0x1b + "[$($this.Y);$($this.X)H"
+}
+if ($this.Shapes) {
+    @(foreach ($shape in $this.Shapes) {
+        $newShape = [PSCustomObject]::new()
+        foreach ($member in $shape.Members) {
+            $newShape.psobject.members.add($member, $true)
+        }
+        $newShape.psobject.members.add([PSNoteProperty]::new('Color', $game.BackgroundColor), $true)
+        $newShape.psobject.members.add([PSNoteProperty]::new('BackgroundColor', $game.BackgroundColor), $true)
+        $newShape.psobject.members.add([PSNoteProperty]::new('Fill', ''), $true)
+        $newShape
+    }) | Out-String -Width 1kb
+} elseif ($this.Content) {
+        if ($this.BackgroundColor -or $game.BackgroundColor) {
+        $bgColor = if ($this.BackgroundColor) { } elseif ($game.BackgroundColor) { $game.BackgroundColor }
+        $intColor = [int]($bgColor -replace '#', '0x')
+        $r,$g,$b = 
+            [byte](($intColor -band 0xff0000) -shr 16),
+            [byte](($intColor -band 0x00ff00) -shr 8),
+            [byte]($intColor -band 0x0000ff)
+                    
+        '' + [char]0x1b+"[48;2;$r;$g;${b}m"
+    
+    }
+    #$intColor = [int]($game.BackgroundColor -replace '#', '0x')
+    if ($this.ContentLength) {
+        ' ' * $this.ContentLength
+    } else {
+        ' ' * "$($this.Content)".Length
+    }
+                
+}
+'' + [char]0x1b + '[25l'
+) -join ''
+
+                </Script>
+      </ScriptMethod>
+      <ScriptMethod>
+        <Name>Draw</Name>
+        <Script>
+                    @(
+    '' + [char]0x1b + '[25l'
+    if ($this.X -ge 0 -and $this.Y -ge 0) {
+        '' + [char]0x1b + "[$($this.Y);$($this.X)H"
+    }
+    if ($this.Color) {
+        $intColor = [int]($this.Color -replace '#', '0x')
+        $r,$g,$b = 
+            [byte](($intColor -band 0xff0000) -shr 16),
+            [byte](($intColor -band 0x00ff00) -shr 8),
+            [byte]($intColor -band 0x0000ff)
+                    
+        '' + [char]0x1b+"[38;2;$r;$g;${b}m"
+    }
+    if ($this.BackgroundColor -or $game.BackgroundColor) {
+        $bgColor = if ($this.BackgroundColor) { $this.BackgroundColor } elseif ($game.BackgroundColor) { $game.BackgroundColor }
+        $intColor = [int]($bgColor -replace '#', '0x')
+        $r,$g,$b = 
+            [byte](($intColor -band 0xff0000) -shr 16),
+            [byte](($intColor -band 0x00ff00) -shr 8),
+            [byte]($intColor -band 0x0000ff)
+                    
+        '' + [char]0x1b+"[48;2;$r;$g;${b}m"
+    
+    }
+    if ($this.Shapes) {
+        ($this.Shapes | Out-String -Width 1kb).Trim()
+    } elseif ($this.Content) {
+        "$($this.Content)".Trim()
+    }
+    if ($this.Color) {
+        [char]0x1b +"[39m"
+    }
+    if ($this.BackgroundColor -or $game.BackgroundColor) {
+        [char]0x1b +"[49m"
+    }
+    '' + [char]0x1b + '[25h'
+) -join ''
+
+                </Script>
+      </ScriptMethod>
+      <ScriptProperty>
+        <Name>Bounds</Name>
+        <GetScriptBlock>
+                    $x = $this.X -as [int]
+$y = $this.Y -as [int]
+@(if ($this.Width -and $this.Height) {
+    for ($oy = 0; $oy -lt $this.Height; $oy++) {
+        for ($ox = 0; $ox -lt $this.Width; $ox++) {
+            "$($x + $ox),$($y + $oy)"
+        }
+    }
+    
+} elseif ($this.Content)  
+{
+    $cl = 
+        if ($this.ContentLength) {
+            $this.ContentLength
+        } else {
+            $this.Content.ToString().Length
+        }
+    for ($ox =0; $ox -lt $cl; $ox++) {
+        "$($x + $ox),$y"
+    }
+} elseif ($x -ge 0 -and $y -ge 0) {
+    "$x,$y"
+}
+)
+
+                </GetScriptBlock>
+      </ScriptProperty>
+      <ScriptProperty>
+        <Name>SpatialHash</Name>
+        <GetScriptBlock>
+                    @(foreach ($xy in $this.MeasureBounds()) {
+    $x, $y = "$xy".Split(',')
+    "$(
+        [int][Math]::Floor($x / ($game.Width / $game.CellWidth))
+    ),$(
+        [int][Math]::Floor($y / ($game.Height / $game.CellHeight))
+    )"
+}) | Select-Object -Unique
+
+
+                </GetScriptBlock>
+      </ScriptProperty>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PowerArcade.CurrentLevel</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Name</Name>
+              <Name>IsCurrentLevel</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+      <ScriptProperty>
+        <Name>IsCurrentLevel</Name>
+        <GetScriptBlock>
+                    
+            if (-not $Global:Game) { return $false }
+            return $Global:Game.CurrentLevel -eq $this
+        
+                </GetScriptBlock>
+      </ScriptProperty>
+    </Members>
+  </Type>
+</Types>
