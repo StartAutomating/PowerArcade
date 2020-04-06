@@ -16,6 +16,8 @@
         Initialize-Game -GamePath .\ROM\Nibbles2020
     #>
     [CmdletBinding(DefaultParameterSetName='GameModule')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="Games are Global")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSPossibleIncorrectComparisonWithNull", "", Justification="Using Null against a list")]
     param(
     # The path to the game.  This path should contain a module, and 'Game','Levels',and 'Sprites' subdirectories.
     [Parameter(Mandatory,Position=0,ValueFromPipelineByPropertyName,ParameterSetName='GamePath')]

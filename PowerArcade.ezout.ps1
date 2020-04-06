@@ -1,5 +1,7 @@
 ﻿#requires -Module EZOut
 #  Install-Module EZOut or https://github.com/StartAutomating/EZOut
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="Games are Global")]
+param()
 $myFile = $MyInvocation.MyCommand.ScriptBlock.File
 $myModuleName = $($myFile | Split-Path -Leaf) -replace '\.ezout\.ps1', ''
 $myRoot = $myFile | Split-Path
