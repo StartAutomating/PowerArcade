@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
-<!-- Generated with EZOut 1.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
+<!-- Generated with EZOut 1.8: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
 <Types>
   <Type>
     <Name>PowerArcade.Level</Name>
@@ -164,9 +164,13 @@ if ($this.Shapes) {
         foreach ($member in $shape.Members) {
             $newShape.psobject.members.add($member, $true)
         }
+        foreach ($tn in $shape.pstypenames) {
+            $newShape.pstypenames.add($tn)
+        }
+        
         $newShape.psobject.members.add([PSNoteProperty]::new('Color', $game.BackgroundColor), $true)
         $newShape.psobject.members.add([PSNoteProperty]::new('BackgroundColor', $game.BackgroundColor), $true)
-        $newShape.psobject.members.add([PSNoteProperty]::new('Fill', ''), $true)
+        $newShape.psobject.members.add([PSNoteProperty]::new('Fill', ' '), $true)
         $newShape
     }) | Out-String -Width 1kb
 } elseif ($this.Content) {
@@ -225,7 +229,7 @@ if ($this.Shapes) {
     if ($this.Shapes) {
         ($this.Shapes | Out-String -Width 1kb).Trim()
     } elseif ($this.Content) {
-        "$($this.Content)".Trim()
+        "$($this.Content)"
     }
     if ($this.Color) {
         [char]0x1b +"[39m"

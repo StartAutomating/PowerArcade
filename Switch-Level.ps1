@@ -138,9 +138,5 @@
         }
 
         $Global:Game.CurrentLevel.Draw()
-        #[Console]::CursorVisible = $false
-
-
-
     }
 }

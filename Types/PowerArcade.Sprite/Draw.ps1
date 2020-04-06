@@ -26,7 +26,7 @@
     if ($this.Shapes) {
         ($this.Shapes | Out-String -Width 1kb).Trim()
     } elseif ($this.Content) {
-        "$($this.Content)".Trim()
+        "$($this.Content)"
     }
     if ($this.Color) {
         [char]0x1b +"[39m"

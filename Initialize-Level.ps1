@@ -106,6 +106,18 @@
             foreach ($member in & $GetScriptMembers $levelDir) {
                 $levelObject.psobject.Members.Add($member, $true)
             }
+
+            if ($levelObject.Default) {
+                if ($levelObject.Default -is [Collections.IDictionary]) {
+                    foreach ($kv in $levelObject.Default.GetEnumerator()) {
+                        $levelObject.psobject.members.add(
+                            [PSNoteProperty]::new($kv.Key, $kv.Value),
+                            $true
+                        )
+                    }
+                }
+            }
+
             $levelObject
         }
 
