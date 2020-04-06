@@ -78,7 +78,8 @@
         if ($allMessages) { # If we have any messages to show
             # Pipe them to out string and write them to the console
             [Console]::Write("$(($allMessages | Out-String -Width 1kb).Trim())")
-            [Console]::CursorVisible = $false # (don't forget to hide the cursor)
+            # (don't forget to hide the cursor, if we can)
+            try {[Console]::CursorVisible = $false} catch {$PSCmdlet.WriteVerbose("$_")}
         }
 
         if ($passThru) { # If we're passing values thru

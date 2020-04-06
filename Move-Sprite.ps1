@@ -79,7 +79,7 @@
         }
 
 
-        [Console]::CursorVisible = $false
+        try {[Console]::CursorVisible = $false} catch {$PSCmdlet.WriteVerbose("$_")} 
         if (-not $NoClear -and -not $this.Hidden) {
             [Console]::Write("$($Sprite.Clear())".Trim())
         }
@@ -127,7 +127,7 @@
 
         if (-not $this.Hidden) {
             [Console]::Write("$($Sprite.Draw())")
-            [Console]::CursorVisible = $false
+            try {[Console]::CursorVisible = $false} catch {$PSCmdlet.WriteVerbose("$_")}
         }
     }
 }

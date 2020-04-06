@@ -231,6 +231,6 @@ describe Sprites {
     }
 }
 
-rmdir $newdir -Recurse -Force
+Remove-Item $newdir -Recurse -Force
 
 
