@@ -87,9 +87,9 @@ $Global:FirstLevelInitializedAt = $null
 
 
 
-describe PSArcade {
+describe PowerArcade {
     it 'Is a Game Engine Written in PowerShell' {
-        Get-Module PSArcade |
+        Get-Module PowerArcade |
             ForEach-Object { $_.ExportedCommands.Values } |
             Where-Object { $_.Noun -eq 'Game' } |
             should belike '*-Game*'
@@ -112,10 +112,11 @@ describe PSArcade {
     }
 
     context Game {
+
         it 'Can Initialize-Game' {
             $global:TheTestGame  = Initialize-Game -GamePath $newDir -NoClear
 
-            $global:TheTestGame.pstypenames | should be 'PSArcade.Game'
+            $global:TheTestGame.pstypenames | should be 'PowerArcade.Game'
         }
 
         it 'Initializing a Game will call the Game.ps1 script in the Game directory' {
@@ -134,6 +135,25 @@ describe PSArcade {
             $Global:FirstLevelInitializedAt | should -BeGreaterOrEqual $Global:AllLevelsInitializedAt
         }
     }
+
+    it 'Can Watch for keyboard input' {
+        $noKeys = Watch-Keyboard
+        $noKeys | should be $null
+    }
+}
+
+describe Games {
+    it 'Got Game' {
+        $games = Get-Game
+        $games | 
+            Select-Object -ExpandProperty PSTypeNames | 
+            Select-Object -First 1 | 
+            should be PowerArcade.GameInfo
+    }
+    it 'Can find games' {
+        $foundGames  = Find-Game
+        $foundGames | Select-Object -ExpandProperty PSTypeNames
+    }
 }
 
 describe Sprites {
@@ -146,6 +166,10 @@ describe Sprites {
             $lo = $LeftObstacle
             $global:foundSomething = $LeftObstacle | Find-Sprite # # | should be $LeftObstacle
             if (-not $foundSomething) { throw "Found nothing" }
+        }
+        it 'Can add a sprite anywhere' {
+            $addedSprite = Add-Sprite -Anywhere -Type Dot -Color "#ff0000" -PassThru
+            $addedOtherSprite = Add-Sprite -Type Wall -Anywhere -Width 3 -Height 3 -PassThru
         }
     }
 
