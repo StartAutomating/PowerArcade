@@ -7,9 +7,13 @@ if ($this.Shapes) {
         foreach ($member in $shape.Members) {
             $newShape.psobject.members.add($member, $true)
         }
+        foreach ($tn in $shape.pstypenames) {
+            $newShape.pstypenames.add($tn)
+        }
+        
         $newShape.psobject.members.add([PSNoteProperty]::new('Color', $game.BackgroundColor), $true)
         $newShape.psobject.members.add([PSNoteProperty]::new('BackgroundColor', $game.BackgroundColor), $true)
-        $newShape.psobject.members.add([PSNoteProperty]::new('Fill', ''), $true)
+        $newShape.psobject.members.add([PSNoteProperty]::new('Fill', ' '), $true)
         $newShape
     }) | Out-String -Width 1kb
 } elseif ($this.Content) {
