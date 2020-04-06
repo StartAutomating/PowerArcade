@@ -39,7 +39,7 @@
                     PSTypeName='PowerArcade.Box'
                     BackgroundColor = $game.BackgroundColor
                 } | Out-String -Width 1kb).Trim())
-                [Console]::CursorVisible=  $false
+                try {[Console]::CursorVisible = $false} catch {$PSCmdlet.WriteVerbose("$_")}
             }
             if ($game.CurrentLevel.Sprites.Clear) {
                 $game.CurrentLevel.Sprites.Clear()
