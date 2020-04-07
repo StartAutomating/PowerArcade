@@ -14,8 +14,9 @@
     .Link
         Move-Sprite
     .Link
-        Remove-Sprite    
+        Remove-Sprite
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="This does not change state, it creates an object")]
     param(
     # The type of the sprite.  The sprite type is used to group sprites and handle specific collisions.
     [Parameter(Position=0,ValueFromPipelineByPropertyName)]
