@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion = '0.4.1'
+    ModuleVersion = '0.4.2'
     RootModule = 'PowerArcade.psm1'
     Description = 'A Retro Arcade Game Console in PowerShell'
     FormatsToProcess = 'PowerArcade.format.ps1xml'
